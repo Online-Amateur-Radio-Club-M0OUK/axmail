@@ -1,0 +1,81 @@
+.TH AXMAIL.CONF5 "28 September 2015" Linux "Linux System Managers Manual"
+.SH NAME
+axMail \- A powerful but simple SMTP plugin for URONode.
+.SH SYNOPSIS
+.B axmail.conf
+.SH DESCRIPTION
+.LP
+.B axmail.conf
+This file configures the operations of axMail\-FAX. You have to insure that
+you add the proper group using addgroup. The common one to use is "ax25".
+.SH COMMANDS
+The following opions are supported for
+.B axmail.conf:
+.TP 14
+.BI "IdleTimeout"
+This should not be longer than the same command in uronode.conf.
+.TP 14
+.BI "HostName"
+This is the fully qualified hostname of your mail system. Typically this
+would be an amprnet domnain such as n1uro.ampr.org.
+.TP 14
+.BI "AllowMail"
+This command controls who has access to use mail on your system. The
+default is all.
+.TP 14
+.BI "Identification"
+This shows how users can authenticate into the application. The default is
+none as the password used over RF may also be used for popping/imap if
+the local sysop chooses to do this.
+Disconnect user from their mailbox."
+.TP 14
+.BI "AutoCreate"
+This allows creation of the user accounts. Since you can also configure
+dovecot or a pop3 daemon and pop-before-smtp to allow mail on smartphones
+as well, this should be set to yes which is default.
+.TP 14
+.BI "LoginAllowed"
+This grants or denies permissions for other functions such as ssh on the
+box. This also controls access to imap/pop. Default is yes.
+.TP 14
+.BI "AutoGroup"
+I suggest using ax25. You'll have to set this using addgroup ax25.
+.TP 14
+.BI "First_uid"
+This is the first user id numeric to be used when axmail creates accounts.
+I suggest 2000 as this keeps mail clients 1000 UID away from actual local
+clients so it'll somewhat separate them this way.
+.TP 14
+.BI "Last_uid"
+This sets just how many users may create and use mailboxes using axmail.
+.TP 14
+.BI "HomeDir"
+This sets the base of the users home directory. I suggest using the
+standard home directory for all users.
+.TP 14
+.BI "Shell"
+This is the shell the users are granted. I suggest if you wish not to allow
+ssh or telnet access into your server to use /bin/false.
+.TP 14
+.BI "FaxGate"
+This is the efax gateway to send your faxes through to. The SFax command
+will preformat your mail to use this gateway. Remove the quotes.
+.SH FILES
+.LP
+.TP 5
+.B /usr/local/etc/ax25/welcome.txt
+Greeting file for new users to welcome them to the mail system.
+.br
+.TP 5
+.B /etc/postfix/main.cf
+postfix configuration file.
+.br
+.SH AUTHORS
+Brian Rogers (N1URO) <n1uro@n1uro.com>
+.br
+.SH OTHERS
+Marius Petrescu (YO2LOJ) <mpetrescu@online.ro>
+.br
+Bob Tenty (VE3TOK) <ve3tok@gmail.com>
+.br
+Heikki Hannikainen (OH7LZB) <hessu@hes.iki.fi>

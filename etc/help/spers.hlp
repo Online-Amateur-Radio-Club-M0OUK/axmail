@@ -1,0 +1,14 @@
+USAGE
+        spers 
+
+DESCRIPTION
+        This command sends message. If no mail recipient is specified,
+        then you will be asked. This is a clone of the "Send" command,
+	with initial flags, cc, and bcc prompts disabled. You will still
+	be asked if  you wish to receive a delivery receipt since the
+	remote reader isn't given an option to ignore it. Mail will also
+	default as highest priority since it's coming from amateur radio.
+
+        You may enter multiple addresses on each line if you desire too. 
+	Separate them with a comma (,). Ex:
+        To: n1uro@email.com, user@foo.net, noone@bar.org

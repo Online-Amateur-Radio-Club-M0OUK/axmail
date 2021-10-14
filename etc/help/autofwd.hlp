@@ -1,0 +1,11 @@
+USAGE
+        Autofwd
+
+DESCRIPTION
+	This command will set the system to auto-forward any incoming
+	mail to this address to a "home" axMail-FAX system you would
+	usually use, OR you could set it to forward any mails from
+	this system to any SMTP based system ie: xNOS, internet, etc.
+	Just hitting the enter key will clear your mail forwarding
+	and your incoming mail to this system will be held here for you.
+

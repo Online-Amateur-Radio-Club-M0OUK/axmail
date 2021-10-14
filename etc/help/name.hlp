@@ -1,0 +1,7 @@
+USAGE
+        name
+
+DESCRIPTION
+	Use the Name command to change your "Real name" within the mail
+	server system. It will automatically be appended to your email
+	address when you send mail out.

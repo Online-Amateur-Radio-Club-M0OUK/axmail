@@ -1,0 +1,10 @@
+USAGE
+        SI
+
+DESCRIPTION
+
+	This creates a signature file which would get appended to your
+	outgoing mail so you don't have to keep typing your closings
+	when you send mail. If you don't have a signature file it will
+	inform you of such but it will not prevent mail from being sent.
+	This is limited to just 1 line (79 characters).

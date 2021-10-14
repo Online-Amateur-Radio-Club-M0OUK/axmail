@@ -1,0 +1,10 @@
+USAGE
+        unkill <msg #>
+
+DESCRIPTION
+	The Unkill commmand allows you to reflag a killed message as
+	valid so that it may be retrieved later if you wish to reread
+	it. This comes in very handy in the event you accidentally kill
+	or delete a mail message. Mail does NOT get fully killed until
+	you exit the axMail-FAX mailbox, and your settings are changed
+	and saved.

@@ -1,0 +1,7 @@
+USAGE
+        list
+
+DESCRIPTION
+	Use this command to list your mail messages. Each message will
+	be flagged as N(ew), U(nread), or blank for read. Use the "read"
+	command to read each message.

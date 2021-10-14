@@ -1,0 +1,6 @@
+USAGE
+        bye | exit | quit
+
+DESCRIPTION
+        Any of these commands will exit axMail-FAX and preserve any
+	mail that you haven't killed or deleted. 

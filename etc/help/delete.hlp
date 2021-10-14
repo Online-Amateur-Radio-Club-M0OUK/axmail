@@ -1,0 +1,10 @@
+USAGE
+        kill [<message_number>]
+        delete [<message_number>]
+        
+DESCRIPTION
+        This command removes specified message from mailbox.
+        If no message number is entered, then command removes
+        last viewed message.
+        
+

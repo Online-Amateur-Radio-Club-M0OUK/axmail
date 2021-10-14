@@ -1,0 +1,10 @@
+USAGE
+        status
+
+DESCRIPTION
+	The STatus command shows you a very shortened list by only 
+	informing you just how many total messages you have by a
+	grand total number.  Ex:
+	status	
+	Messages: 4
+

@@ -1,0 +1,11 @@
+USAGE
+	Verbose <msg #>
+
+DESCRIPTION
+	Like with the Read command, verbose will print out the full mail
+	headers along with the body of the message. This command requires
+	a parameter consisting of the message number you wish to read.
+	Ex: V 3 will verbosely print message #3 including all mail
+	headers. This can be quite lengthy but also can be quite
+	handy if you're trying to find out if someone else's mail
+	account may have been compromised or spoofed.

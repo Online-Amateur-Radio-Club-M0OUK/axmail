@@ -1,0 +1,499 @@
+#!/bin/bash -x
+
+# email2fax-axmail 1.0beta
+# This script allows you to send faxes through your Hylafax server.
+# It extracts PDF,TIFF or PS attachments from an email and then passes
+# it to Hylafax thru "sendfax" command.
+
+# Hylafax adaptation by:
+# (c) Brian Rogers - NCC 2007
+# (c) Raffaello Cassetta 2006
+# Original work by:
+# (c) Tomasz Chmielewski < tch @ wpkg . org > 2005-2006
+# License: GPLv2
+
+# Variables you might want to change
+
+FAXMAIL="NCC FAX <fax@asterisk.n1uro.ampr.org>"   # email from which confirmations are sent
+
+DEFSENDER="fax@n1uro.ampr.org"                          # If email doesn't have "From:" field, default to this for Hylafax error mails
+
+LOGFILE=/var/log/fax.log                # where to log
+
+TMPDIR=/var/email2fax                           # dir for temp files; must be writable by the launching user
+
+MAXAGE=30                                 # how long to keep temp files, in minutes.
+                                          # There should be no reason for keeping these files so long because
+                                          # once sendfax has enqueued the document, this is stored in Hylafax
+                                          # spool directory and there resides until fax transmission's completion
+                                          # In a production environment, with tens or hundreds of fax submitted every
+                                          # minute, you should reduce this to a value as low as possible. Anyway, leave
+                                          # some grace time to tolerate delays in bash script executions (due to high
+                                          # CPU load or whatelse)
+
+WHOAMI=`whoami`                                 # User that launches script - useful for testing/debugging when invoked
+                                                # by MDAs or other daemons
+
+SENDFAXOPTS=" "                                  # Default sendfax options
+
+
+# You probably don't have to change anything below...
+
+DATADIR=$TMPDIR/`date +%s-%N`
+EMAILFILE=$DATADIR/emailfile.eml
+COVERFILE=$DATADIR/coverpage.txt
+MESSAGEFILE=$DATADIR/message.txt
+
+DATETIME=`date +"%A, %B %d %Y, at %R:%S"`       # date put in email confirmations
+#DATETIME=`date +"%A, %B %d %Y, at %r"`         # date put in email confirmations, different format
+
+VERSION="email2fax-axmail v1.0"                 # version
+
+PATH="/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:"$PATH
+
+############################################################
+# check how we are started, print help if pipe wasn't used #
+############################################################
+
+[ -p /dev/stdin ]
+[ $? -eq 1 ] && EMPTY=1 && cat <<EOF
+$VERSION, email to fax gateway for Hylafax
+
+Usage:
+
+"piped message" | email2fax-axmail [OPTIONS]
+
+Options:
+--nomail        don't send any error or confirmation email when a message has been submitted (default: send error or confirmation email)
+--noconfirm     don't send any confirmation email when a message has been submitted, send email only for errors (default: send confirmation or error email)
+--nodelete      don't delete temporary files (default: delete temporary files)
+--nofax         don't send the fax (default: send fax)
+--debug         enable debug logging
+--notify        enable notification by electronic mail when the facsimile has been delivered.
+                by default HylaFAX will notify the submitter only if there is a problem with a job.
+--notify-all    enable notification by electronic mail when the facsimile has been delivered and when it is
+                requeued for retransmission. by default HylaFAX will notify the submitter only if there is a
+                problem with a job.
+--usebody       uses message body as faxcover
+
+Email can contain either PDF,PS,TIFF attachments or text body, and must have at least one destination fax number as a subject.
+Multiple destination numbers should be separated by spaces.
+If no attachment is supplied, message body is sent as fax.
+
+Examples:
+
+This one sends a fax from the command line, and enables debug logging:
+
+cat message.eml | email2fax-axmail --debug
+
+
+This one enables debug logging, doesn't send a confirmation email,
+doesn't delete temporary files, and doesn't send a fax (useful for testing etc.):
+
+cat message.eml | email2fax-axmail --debug --nomail --nodelete --nofax
+
+
+This entry in .procmailrc located in fax recipient home directory intercepts all emails
+to fax recipient, and passes them to email2fax-axmail:
+
+:0fw
+| /usr/local/bin/email2fax-axmail
+
+
+The same can be done in .forward file located in the same directory with this semantic:
+
+"| /usr/local/bin/email2fax-axmail"
+
+quotes included
+
+
+By default, email2fax-axmail logs ALL messages to $LOGFILE, and saves temporary files in $TMPDIR.
+These paths, along with several different variables, can be changed
+at the beginning of this script ($0).
+
+See http://wpkg.org/email2fax for updates, bug reports, and answers.
+
+EOF
+
+[ "$EMPTY" == "1" ] && exit 0
+
+cat <<EOF >> $LOGFILE
+--------------------------------------------------------------
+$VERSION started on $DATETIME with options:
+
+   $0 $@
+
+by user: $WHOAMI
+
+EOF
+
+
+#################################################
+# Check the error code and make a proper action #
+#################################################
+
+send_msg()
+{
+
+[ $1 -eq 1 -o $1 -eq 2 ] && NEWSUBJECT="Fax problem"
+[ $1 -eq 0 -a $NOFAX -eq 1 ] && NEWSUBJECT="Fax not sent"
+[ $1 -eq 0 -a $NOFAX -eq 0 ] && NEWSUBJECT="Fax confirmation"
+
+#FAXNUMBERS=`echo $NEWNUM | sed -e "s/ /, /g" -e "s/@/ /" | awk '{print $2}'`
+FAXNUMBERS=`cat $COVERFILE |grep Subject:|sed -e "s/Subject: //" -e "s/@/ /" | awk '{print  $2}' `
+cat <<EOF >$MESSAGEFILE
+From: $FAXMAIL
+To: $SENDER
+Subject: $NEWSUBJECT
+
+Dear sender,
+
+EOF
+
+case "$1" in
+
+0)
+if [ $NOFAX -eq 0 ] ; then
+
+if [ $NOCONFIRM -eq 0 ] ; then
+cat <<EOF >>$MESSAGEFILE
+The message was accepted for fax delivery.
+
+Fax number(s): $FAXNUMBERS
+Date: $DATETIME
+
+EOF
+[ $NOMAIL -ne 1 ] && cat $MESSAGEFILE | sendmail -t
+
+fi
+else
+
+cat <<EOF >>$MESSAGEFILE
+Fax sending is currently disabled, please contact your administrator.
+
+Fax number(s): $FAXNUMBERS
+Date: $DATETIME
+
+EOF
+[ $NOMAIL -ne 1 ] && cat $MESSAGEFILE | sendmail -t
+
+fi
+
+del_temp
+
+;;
+
+1)
+echo "No e-mail message passed to email2fax-axmail, or message broken." >>$LOGFILE
+cat <<EOF >>$MESSAGEFILE
+The message you sent was broken or invalid.
+Check if it had a proper attachment (must be one PDF or one TIFF attachment
+or plain text body),
+and if the fax number was correct, and try again.
+If the problem persists, contact your administrator.
+
+Fax number(s): $FAXNUMBERS
+Date: $DATETIME
+
+EOF
+
+[ $NOMAIL -ne 1 ] && cat $MESSAGEFILE | sendmail -t
+del_temp
+;;
+
+2)
+cat <<EOF >>$MESSAGEFILE
+System not configured properly for sending faxes, contact your administrator.
+
+Date: $DATETIME
+
+EOF
+
+
+[ $NOMAIL -ne 1 ] && echo $NOMAIL && cat $MESSAGEFILE | sendmail -t
+del_temp
+
+esac
+}
+
+
+#######################################
+# Delete temporary files if requested #
+#######################################
+
+del_temp()
+{
+if [ $NODELETE -eq 0 ] ; then
+  [ $DEBUG -eq 1 ] && echo "Removing old temporary files" >>$LOGFILE
+  [ $DEBUG -eq 0 ] && find $TMPDIR/* -type d -mmin +$MAXAGE -exec rm -fvr {} \; &>/dev/null
+  [ $DEBUG -eq 1 ] && find $TMPDIR/* -type d -mmin +$MAXAGE -exec rm -fvr {} \; >>$LOGFILE
+  echo >>$LOGFILE
+else
+ echo "Not removing old temporary files" >>$LOGFILE
+ echo >>$LOGFILE
+fi
+}
+
+
+#####################################################
+# By default, our internal "error code" should be 0 #
+#####################################################
+ERRORCODE=0
+
+
+#############################################
+# Make sure temp dir exists and is writable #
+#############################################
+
+mkdir -p $DATADIR
+if [ $? -ne 0 ] ; then
+echo "$DATADIR not writable, can't continue!" >>$LOGFILE
+ERRORCODE=2
+fi
+
+###########################################
+# Check if "munpack" program is installed #
+###########################################
+
+if [ `which munpack &>/dev/null ; echo $?` -ne 0 ] ; then
+echo "munpack is not installed: can't extract attachments, can't continue!" >>$LOGFILE
+ERRORCODE=2
+fi
+
+############################################
+# Read flags and set appropriate behaviour #
+############################################
+
+# --nomail takes precedence over --noconfirm. If --nomail is present then --noconfirm is ignored
+[ `echo $@ | grep -i -q '\-\-nomail' ; echo $?` -eq 0 ] && NOMAIL=1 || NOMAIL=0
+if test $NOMAIL = 0; then
+ [ `echo $@ | grep -i -q '\-\-noconfirm' ; echo $?` -eq 0 ] && NOCONFIRM=1 || NOCONFIRM=0
+ else
+  NOCONFIRM=0
+fi
+
+[ `echo $@ | grep -i -q '\-\-usebody' ; echo $?` -eq 0 ] && USEBODY=1 || USEBODY=0
+[ `echo $@ | grep -i -q '\-\-nodelete' ; echo $?` -eq 0 ] && NODELETE=1 || NODELETE=0
+[ `echo $@ | grep -i -q '\-\-nofax' ; echo $?` -eq 0 ] && NOFAX=1 || NOFAX=0
+[ `echo $@ | grep -i -q '\-\-debug' ; echo $?` -eq 0 ] && DEBUG=1 || DEBUG=0
+
+# --notify-all takes precedence over --notify. If --notify-all is present then --notify is ignored
+[ `echo $@ | grep -i -q '\-\-notify\-all' ; echo $?` -eq 0 ] && NOTIFYALL=1 || NOTIFYALL=0
+if test $NOTIFYALL = 1; then
+ NOTIFY="-R"
+else
+ [ `echo $@ | grep -i -q '\-\-notify' ; echo $?` -eq 0 ] && NOTIFY="-D" || NOTIFY=""
+fi
+
+UNKNOWN_FLAGS=`echo $@ | sed -e "s/--nomail//gI" -e "s/--nodelete//gI" -e "s/--nofax//gI" -e "s/--debug//gI" -e "s/--usebody//gI" -e "s/--notify-all//gI" -e "s/--notify//gI" -e "s/--noconfirm//gI"`
+[ -z $UNKNOWN_FLAGS ]
+[ $? -ne 0 ] && echo "WARNING: unknown flags: $UNKNOWN_FLAGS" >>$LOGFILE
+
+if [ $DEBUG -eq 1 ] ; then
+cat <<EOF >>$LOGFILE
+Variables used:
+
+FAXMAIL:      $FAXMAIL
+LOGFILE:      $LOGFILE
+VERSION:      $VERSION
+TMPDIR:       $TMPDIR
+DATADIR:      $DATADIR
+EMAILFILE:    $EMAILFILE
+MESSAGEFILE:  $MESSAGEFILE
+DATETIME:     $DATETIME
+
+EOF
+
+fi
+
+
+############################################################
+# If we can't continue, send a message with an explanation #
+############################################################
+
+[ $ERRORCODE -eq 2 ] && send_msg 2 && exit 2
+
+
+#########################################
+# Make a temporary file out of an email #
+#########################################
+
+cat | sed 's/$//' > $EMAILFILE
+cp $EMAILFILE $COVERFILE
+
+##############################
+# COVERPAGE VARIABLES ADDED: #
+##############################
+COVERTO=`cat $COVERFILE |grep Subject:|sed -e "s/Subject: //" -e "s/@/ /" | awk '{print  $1}' `
+COVERCOM=`cat $COVERFILE | grep Subject:|sed -e "s/Subject: //" -e "s/@/ /" | awk '{$1=""; $2=""; sub("  ", " "); print}' `
+
+######################################################################
+# If input file is too short (broken email etc.) send error and quit #
+######################################################################
+
+if [ `du -b $EMAILFILE | awk '{print $1}'` -lt 15 ] ; then
+echo "No e-mail message passed to email2fax-axmail, or message broken." >>$LOGFILE
+# send_msg 1
+# exit 1
+fi
+
+
+#############################################################################################
+# Get the email address to send a confirmation to, and telephone number(s) to send faxes to #
+# Verify suitable data and take appropriate action                                          #
+#############################################################################################
+
+SUBJLINE=`grep -m 1 "Subject:" $EMAILFILE`
+# TOLINE=`grep -m 1 "To:" $EMAILFILE.1`
+SENDER=`grep -m 1 "From:" $EMAILFILE | sed -e "s/From://"`
+NUMBERS=`echo $SUBJLINE | awk '{print NF}'`
+SUBJECT=`echo $SUBJLINE | sed -e "s/Subject://" `
+
+# If no fax numbers in the subject, send an explanation and quit
+[ $NUMBERS -lt 2 ] && send_msg 1 && exit 1
+
+# If no sender in file, don't send a confirmation email
+if [ -z "$SENDER" ] ; then
+ NOMAIL=1
+ SENDER=$DEFSENDER
+fi
+
+#########################################################################
+# Extract everything from mail, check files and take appropriate action #
+#########################################################################
+
+# extract everything from mail
+MOUT=`munpack -t -C "$DATADIR" "$EMAILFILE"`
+
+# I AGREE: the following "for" cycle is terrible, please make it better
+#                                       ^^^^^^^^
+SEQ="ODD"
+for P in $MOUT
+do
+ if [ "$SEQ" = "ODD" ] ; then
+  SEQ="EVEN"
+  FORVAR=$P
+ else
+  FORVAR=$FORVAR" "$P
+  if [ `echo "$FORVAR"|grep -c "text/plain"` -ne 0 ] ; then
+   TXT=`echo $FORVAR | cut -f1 -d " "`" "$TXT
+#   TXT=`cat $DATADIR/$EMAILFILE|formail -k -X X-Origin: -X X-Mailer >$DATADIR/part1`
+   $FORVAR=$P
+   elif [ `echo "$FORVAR"|grep -c -e "pdf" -e "tif" -e "postscript"` -ne 0 ] ; then
+    ATTACH=`echo $FORVAR | cut -f1 -d " "`" "$ATTACH
+  else
+  mkdir $DATADIR/convdir
+  cat $DATADIR/emailfile.eml|formail -k -X X-Origin: -X X-Mailer >$DATADIR/part1
+  touch $DATADIR/convdir/foo
+  /usr/bin/text2ps -B $DATADIR/part1 > $DATADIR/convdir/part1.ps
+#   fi
+  fi
+  SEQ="ODD"
+ fi
+done
+
+# If no txt nor pdf nor tif nor ps parts are present, send error and exit
+# If only text is present, then it's only a mail
+if [ -z "$ATTACH" -a -z "$TXT" || -f "$CONVDIR/part1.ps" ] ; then
+ echo "No pdf nor tif nor ps nor text body present." >>$LOGFILE
+ send_msg 1
+ exit 1
+ elif [ -z "$ATTACH" ] ; then
+  ISMAIL=1
+  else
+   ISMAIL=0
+fi
+
+
+#############################################################################
+# Read destination numbers from subject, verify and take appropriate action #
+#############################################################################
+
+# Convert fax numbers from the subject field to separate numbers
+SUBJLINE=`grep -m 1 "Subject:" $EMAILFILE | sed -e "s/Subject://" -e "s/[-() ]/ /g" -e "s/,/ /g"`
+
+NEWNUM=""
+
+for FAXNUM in $SUBJLINE
+
+do
+FAXNUM=`cat $COVERFILE | grep -m 1 "Subject:" | sed -e "s/Subject: //" -e "s/@/ /" | awk '{print $2}' `
+[ ! -z `echo "$FAXNUM" | sed -e "s/[0-9]//g"` ] && echo "Wrong fax number: $FAXNUM" >>$LOGFILE && FAXNUM=
+
+[ -n "$FAXNUM" ] && NEWNUM="$NEWNUM $FAXNUM"
+
+done
+
+# If no numbers have been munged, send an error message and exit
+if test "$NEWNUM" = "" ; then
+
+echo "No destination numbers present in Subject field." >>$LOGFILE
+# send_msg 1
+# exit 1
+
+fi
+
+# Log who sends fax where
+cat <<EOF >>$LOGFILE
+Fax from$SENDER to fax number(s): $FAXNUM
+Attachments: $ATTACH
+EOF
+
+
+############################
+# Send document to sendfax #
+############################
+
+if [ $NOFAX -eq 0 ] ; then
+
+ # If the user wants to send the body or it's only a text message, then create text parts list.
+ # We use faxmail to convert plain text to ps format - just to avoid strange characters that could confuse sendfax.
+ # There should be a dedicated app for doing this, but faxmail is available here and now (default with Hylafax)- nonetheless, it works :P
+ if [ $USEBODY -eq 1 -o $ISMAIL -eq 1 ] ; then
+  CONVDIR="$DATADIR/convdir"     # to avoid name collisions we create a dir for converted text
+  mkdir $CONVDIR
+  for ITEM in $TXT
+  do
+    cat $DATADIR/emailfile.eml | formail -k -X X-Origin: -X X-mailer: > part1
+    TXT2PS="$CONVDIR/$ITEM.ps"
+    /usr/bin/text2ps -B $DATADIR/part1 > $CONVDIR/part1.ps
+    TEXTPART=""$TXT2PS" "$TEXTPART""
+  done
+  else
+   TEXTPART=""
+ fi
+
+ # If we have to send PDF or TIF attachments then create list
+ if [ $ISMAIL -eq 0 ] ; then
+  for ITEM in $ATTACH
+   do
+    ATTACHMENT=""$DATADIR/$ITEM" "$ATTACHMENT""
+  done
+  else
+   ATTACHMENT=""
+ fi
+
+ # create destination array for "sendfax"
+  NUM=`cat $COVERFILE | grep -m 1 "Subject:" | sed -e "s/Subject: //" -e "s/@/ /" | awk '{print $2}' `
+# DEST=""
+# for NUM in $NEWNUM
+# do
+#  DEST="-d $COVERTO@$NUM "$DEST
+  DEST="-d $COVERTO@$NUM"
+# done
+#  TEXTPART="$CONVDIR/part1.ps"
+
+## if [ -z "$TEXTPART" ]
+ sendfax -r "Amateur Communication" -x "axMail-Fax" -c "$COVERCOM" -f "$SENDER" $DEST $CONVDIR/part1.ps $TEXTPART $ATTACHMENT >> $LOGFILE 2>&1 &
+## else
+## sendfax -r "Email2Fax" -x "E-Fax at NCC" -c "$COVERCOM" -f "$SENDER" $DEST $TEXTPART $ATTACHMENT >> $LOGFILE 2>&1 &
+## fi
+else
+
+ echo "Not sending fax because --nofax was used" >>$LOGFILE
+
+fi
+
+echo >>$LOGFILE
+
+send_msg 0

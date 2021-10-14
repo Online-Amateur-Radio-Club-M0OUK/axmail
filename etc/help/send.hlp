@@ -1,0 +1,13 @@
+USAGE
+        send [<mail recipient>]
+
+DESCRIPTION
+        This command sends message. If no mail recipient is specified,
+        then you will be asked. You will also be prompted for a cc: and
+	also for a bcc: entry if desired. Hitting enter disables these
+	features. You may enter multiple addresses on each line if you
+	desire too. Separate them with a comma (,). Ex:
+	
+	s  n1uro@email.com, user@foo.net, noone@bar.org
+	cc: ripoff@arrl.org, commish@fcc.gov
+	bcc: ghost@noth.ing, not@listed.info

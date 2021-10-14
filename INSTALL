@@ -1,0 +1,74 @@
+axMail - an SMTP mailbox for the various linux node frontends
+         and outbound FAX engine.
+
+Current author: Brian Rogers (N1URO) <n1uro@n1uro.com>
+Past author: Marius Petrescu (YO2LOJ) <mpetrescu@online.ro>
+Creator: Heikki Hannikainen (OH7LZB) <hessu@pspt.fi>
+
+Additional Submissions: Stefano (IW3IJQ) <ziotibia1@libero.it>
+
+As with any of the softwares I tweek n geek, *use at your own risk*!
+With that said, and the fact that this is GPL software if you find
+something that's borked... don't just submit a bug report. Fix it if
+you can. Rerelease it under your own callsign if you wish, or feel free
+to send me your code and I'll import it in.
+
+This is probably one of the simplest packages to install and configure!
+After you run tar zxvf axmail-###.tgz cd axmail-#### (which is where 
+you should be now if you're reading this :) ) and run:
+
+make; make install
+Note: If you have clamsmtp and your clamsmtpd.conf is in /usr/local/etc, 
+symlink it to /etc.
+
+(on newer gcc/libs I do know that there's a warning after it makes but
+it doesn't prevent the binary from compiling and so far it seems to test 
+ok. I'll fix that if and when I get the chance but don't hold your breath 
+on it hi!)
+
+cd /usr/local/etc/ax25 and using your favorite editor (vi, joe, pico, etc) and
+edit axmail.conf. In here you can specify how you wish the mailbox
+to handle accounting for end users. On *most* linux systems, the default
+should be "ok" but if you wish to have users contact you first, or if
+you wish to have the system auto-create a standard shell login, or popmail 
+account for the users, etc... you may do so in the file. Double check your 
+settings (it *is* possible you can configure axmail.conf so that everyone 
+has root-group access... but why would you wish to do that? You've been 
+*warned* so double check your config settings for auto-creation of 
+accounts before saving!) The file is well commented to assist you. When 
+you're finished and have become an expert, if you wish to you can delete 
+the comment lines.
+
+You may also customize the file "welcome.txt" in /usr/local/etc/ax25/ if you 
+wish to also. I suggest leaving the first line as-is as this is the so called
+"new user" welcome greeting email. I've supplied a basic and short 
+greeting email message that users will get once they've created their 
+mailbox. If you would rather new users email your mail account directly 
+instead of root, you may wish to change that line.
+
+For the software itself... believe it or not, you're *DONE*! That's all!
+However... now we need to get it hooked into which ever node frontend you 
+run so that users have a way of accessing it. axMail runs as an external 
+process (ExtCmd) to the node. I've tested it with URONode (obviously) and 
+with LinuxNode by Tomi. To do this cd /usr/local/etc/ax25 and using your 
+favorite editor open node.conf and add the following line to your ExtCmds:
+
+ExtCmd          MAil    1       root    /usr/local/sbin/axmail axmail %u
+(note: MA in the word MAil is in CAPS)
+
+Save uronode.conf and telnet in to test! It should work just fine. Since you 
+would have an existing account on your server, it's unlikely that you'll 
+get the welcome message, but since you can edit it, you'll know what it 
+says :)
+
+**ERROR 1**
+*** Note:
+If you're installing axMail-FAX via source, but your MTA (aka: postfix)
+was installed from repository packaging, you may need to create a symlink
+to your users mail file directory... typically: 
+/var/spool/mail/ -> /usr/local/var/spool/mail/
+If you don't do this, users will NOT see their incoming mail.
+***
+
+Happy mailing!
+

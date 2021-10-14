@@ -1,0 +1,7 @@
+USAGE
+        SReply (short for "send reply")
+
+DESCRIPTION
+	This command allows you to send a reply to the message number
+	the prompt tells you that you're on. Subject and destination
+	will be preserved. 

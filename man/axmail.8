@@ -1,0 +1,84 @@
+.TH AXMAIL8 "28 September 2015" Linux "Linux System Managers Manual"
+.SH NAME
+axMail \- A powerful but simple SMTP plugin for URONode.
+.SH SYNOPSIS
+.B axmail %u
+.SH DESCRIPTION
+.LP
+.B axMail\-FAX
+is a simple but powerful SMTP mail plugin for URONode. This package allows
+an end user to read and send SMTP based mail via RF, with many options
+available.
+.SH COMMANDS
+The following commands are supported for users of
+.B axMail\-FAX:
+.TP 14
+.BI ?
+Give short list of available commands.
+.TP 14
+.BI "Autofwd \- 
+allows the end user for forward their mail to this location to any valid SMTP mailbox."
+.TP 14
+.BI "Bye \- 
+Disconnect user from their mailbox."
+.TP 14
+.BI "Cancel \- 
+Exit mailbox, discard any kills."
+.TP 14
+.BI "Delete (number) -\ 
+Delete message number #. Multiple numbers can be space delimited."
+.TP 14
+.BI "Exit \- 
+Quit the mailbox, save changes."
+.TP 14
+.BI "Help (command) -\ 
+Display help for specific command."
+.TP 14
+.BI "Info \- 
+Online information about this application."
+.TP 14
+.BI "Kill \- 
+see Delete. Msg numbers can be space delimited for multi kills."
+.TP 14
+.BI "List \- 
+List your mailbox messages for reading."
+.TP 14
+.BI "Name \- 
+Enter or change your name in your outgoing mail. This does not change your email address."
+.TP 14
+.BI "Quit \- 
+Quit the application, kill messages flagged for deletion."
+.TP 14
+.BI "Read (number) \- 
+Read message number #. You may reply to it after reading it by using the Send Reply (SReply) command."
+.TP 14
+.BI "Send \- 
+Send a message. axMail will prompt you through everything step by step and also will ask you for two layers of receipt generations.
+.TP 14
+.BI "STatus \- 
+Quick listing of your mailbox status."
+.TP 14
+.BI "Unkill \- 
+Undelete or unkill a message flagged for deletion."
+.TP 14
+.BI "Verbose \- 
+Read your mail with full message headers for debugging."
+.SH FILES
+.LP
+.TP 5
+.B /usr/local/etc/ax25/axmail.conf
+axMail configuration file.
+.br
+.TP 5
+.B /etc/postfix/main.cf
+postfix configuration file.
+.br
+.SH AUTHORS
+Brian Rogers (N1URO) <n1uro@n1uro.com>
+.br
+.SH OTHERS
+Marius Petrescu (YO2LOJ) <mpetrescu@online.ro>
+.br
+Bob Tenty (VE3TOK) <ve3tok@gmail.com>
+.br
+Heikki Hannikainen (OH7LZB) <hessu@hes.iki.fi>

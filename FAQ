@@ -1,0 +1,116 @@
+axMail - an SMTP mailbox for the various linux node frontends.
+
+axMail appears to work with most linux based MTAs (Mail Transport Agent)
+but not all, and I haven't had a chance to test it with them all either, 
+nor do I honestly care to install every MTA available for linux to do such 
+so if you do run an MTA *not listed* below, please feel free to email me 
+at: <n1uro@n1uro.com> and I'll add your report to this list. Consider this 
+file a 'work in progress' as with the software itself. How to test is 
+listed at the bottom.
+
+PostFix   - tested fine
+Exim      - tested fine
+Smail**   - failed tests, and also causes a total loss of end user mail!
+Sendmail* - <unknown>
+Qmail***  - <unknown>
+
+*  - In theory, the sendmail MTA should be ok since both exim and postfix
+     have sendmail compatable binaries/symlinks/etc.
+
+** - I don't know what it is with the smail MTA, but for some reason *all* 
+     mail gets lost during the internal transfers from the system mailbox 
+     and back to the system mailbox. Since smail has basically been 
+     abandoned in favor of exim, I don't personally foresee this as an
+     issue.
+
+***- I've never installed a qmail system before and honestly don't feel
+     like doing that now hi!.. so if you run qmail and it works ok, please
+     let me know and I'll change it's status
+
+If there's an MTA that I have missed and you've tested it and it works 
+please inform me and I'll add your results here.
+
+
+How to test axmail:
+
+You can run axmail at a command prompt!.. all it requires is that you put 
+your callsign after it. BEFORE you run this via a commandline however I 
+strongly suggest you make a backup of your system mail spool file by 
+typing: cp /var/spool/mail/call /var/spool/mail/call.bak this way here if 
+there is an issue and you have mail waiting, you won't lose any mail.
+
+I'll assume your account on your box is your callsign, so in my case I would 
+execute: 
+n1uro@nat-client0:~$ /usr/sbin/axmail n1uro
+and the standard greetings should appear along with the prompt and any
+mail waiting should appear listed.
+
+Pending the above test worked ok and unread/undeleted mail was saved back 
+into the system mailbox, try it from the node as a user who doesn't have 
+an account on the box. Hopefully when you exit, it'll tell you that you 
+have new mail waiting! Go back in and you should see the welcome.txt file 
+from /etc/ax25 listed as a greeting email message.
+
+Other quick FAQs:
+
+axMail works by comparing the user's system mail spool file, and as well 
+as any existing axMail saved mail and merges them together 'offline' for 
+lack of a better word to use. It then takes this mail and allows the user 
+to read/reply/delete/save/etc. 
+
+axMail has *always* supported file attachments, after all a file attachment
+is just an encoded file appended to the body of the email message... its just
+that most every client now-a-day automatically encodes/decodes them for you
+and you assume that a file attachment is a seperate entity. All you need to
+do to send and receive attachments via a packet terminal is the following
+(examples taken from a linux terminal);
+
+Sending: First encode the file by using uuencode. To do this run 
+uuencode filename filename
+or if you want to make a file of it run: uuencode file file > file1
+then copy and paste that encoded text in it's full into the body of
+the mail message and send it.
+
+Receiving: copy and paste the output of your message into a temporary
+file and then run "uudecode -o filename tempfile". You will now have
+a pdf/doc/text/jpg file sent to you by someone.
+
+axMail now supports sending of fax transmissions! To configure axMail to
+be able to do such, configure an account with an online fax service such
+as eFax where you can email faxes and put the email address you'd use to
+send faxes to in a _new line_ called "FaxGate" inside /etc/ax25/axmail.conf.
+When users attempt to send a fax, your account will be hidden from them and
+all they'll see is that they're sending to "a" fax gateway system. 
+
+People have asked about why new incoming mail isn't seen until after the 
+user logs out of axMail. If axMail read directly off of the system 
+mailspool file, then it'd lock out any new incoming mail from being posted 
+to the user's mailbox as it'd have a lock on the spool file, and the 
+message numbers could also possibly change while the user goes to select a 
+message number to read. This would be very confusing to the end user.
+
+If you wish to allow users to use the internet or packet TCP/IP to pop3 
+their mail from your system, they may do so... however keep in mind, any 
+mail they read or list manually within axMail will have it's status 
+changed from "new". As we all know about the pop3 protocol, mail not 
+flagged as "new" isn't popped but it's considered as if the client is 
+using a software package such as eudora or outlook (to name a couple... 
+notice which I listed first? hi!) and they have their options set to leave 
+a copy of their mail on the server. The user will have to log into your 
+node and retrieve their mail from there. After all, isn't part of running 
+packet node services is to encourage hams to actually use their radios to 
+get to such things? :) All you as sysop/root on the box need to do is 
+ensure that a pop3 daemon is installed and running, and that you configure 
+axMail.conf to give the end user proper permissions in their shell to be 
+able to use your pop3 daemon.
+
+I've gone to many days worth of studying how most boxes are configured 
+I've taken it upon myself to try and get axMail as 'bullet proof' and as 
+simple a process as it can possibly be. Unfortunately the program can not 
+read your mind so you'll have to do *some* config work to it... but 
+otherwise it should be a nice low-ram low-resource system for you and your 
+users to enjoy.
+
+Comments and questions are always welcomed!
+
+73 de Brian N1URO

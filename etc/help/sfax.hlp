@@ -1,0 +1,20 @@
+USAGE
+        sfax
+
+DESCRIPTION
+        This command sends a facsimile. The To: field will be preset for
+	you. You can specify a user but you *must* specify a full phone
+	number to fax to. Ex: n1uro@14132416644
+
+	Notes: Faxes will send only! You will get a confirmation that your
+	fax was received into the system and another message after the
+	fax was either sent successfully or had issues sending. Faxes
+	will only work within the United States. Sending of faxes
+	elsewhere is a violation of this program.
+
+	IMPORTANT: you *must* include the beginning country code. For
+	the U.S it's 1, for the U.K. it's 011. An example of a properly
+	entered number would be: 12125551212
+
+
+

@@ -1,0 +1,546 @@
+axMail - an SMTP mailbox for the various linux node frontends.
+
+PREFACE:
+
+First off, sincere thanks to those who have written to tell me that
+they use axMail, like what I've done to axMail, and for the 
+enthusiasm shown via words and/or code contributions for the program
+in hopes of keeping packet radio networks around the world alive!
+
+INTRO:
+
+Greetings and thanks for taking a look at the program. Below I've posted
+a kind of history of the program to the best of my knowledge taking text
+from existing files. Rather than trying to reinvent the wheel and after
+seeing this program before on Labrat's radio.linux.org.au site, I decided
+to try and give some life into it... partially with the assistance of Phil 
+N1XTB nudging me pretty consistantly for many months in helping him get an 
+SMTP agent in his linux based packet node server without having to install 
+an xNOS overhead node ontop it. :) 
+
+Please do take a moment and read the text based files included with this 
+package so you're a bit familiar with what it does so that you don't get a 
+false perception as to what it can and/or can not do. axMail just might 
+not be what you're looking for or expecting for a node based plugin
+
+CHANGE HISTORY:
+axMail 2.13
+  Updated June 24, 2021
+- Went through the code and fixed multiple compile warnings. Warnings do not
+  affect the program/binary from compiling or funcitioning BUT rather gives
+  the author(s) a warning that possible compile instructions may have changed
+  or are changing.
+
+axMail 2.12.2
+  Updated January 18, 2021
+- Fixed bug in mailcmd.c where sending acted funky on 64 bit systems.
+  axMail would segfault out before properly returning the user back to
+  the mailbox prompt.
+- While at it also fixed some compiler warnings in mailcmd.c
+- edited defines.h to fix old path from /var/ax25 to /var/lib/ax25
+- edited defines.h to reflect this version.
+
+axMail 2.12.1
+  Updated January 17, 2021
+- Maintenance release moving /var/ax25/axmail to /var/lib/ax25/axmail
+  to honor linux file system rules.
+- Changed defines.h to reflect this version.
+axMail 2.12
+  Updated August 17, 2020 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+- After fussing with an updated ClamSMTP system that appears to have some
+  issues at least in regards to the Debian repositories I have come to
+  learn that the MTA used (postfix) beginning with version 2.3 now may
+  use milter (mail filter) systems. Details on how to configure the newer
+  ClamAV-Milter system are at https://uronode.n1uro.com/linux/ under the
+  ClamSMTP link at the bottom of the page. This is quite a major enhancement
+  to axMail-Fax!
+
+  Since now it will scan for either clamsmtp OR clamav-milter the outputs
+  on mails show only that the mail has been scanned by ClamAV.
+axMail 2.11.1
+  Updated February 21, 2020 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+- removed the #ifdef CLAMSMTP routine from config.h
+- fixed my routine for checking for /etc/clamsmtpd.conf so that it no longer
+  needs to be previously defined in config.h and auto senses now in mailcmd.c.
+  It dawned on me that the reason it was segfaulting if there was no .conf
+  file that trying to fclose() a file that did not exist was the reason that
+  it was causing axmail to segfault. 
+- made this version 2.11.1 in defines.h.
+- updated INSTALL and README to reflect history and instructions.
+- updated Makefile so make upgrade does not replace config files since
+  it's not required if you're simply upgrading from axmail-2.9 or greater.
+axmail 2.11
+  Updated February 18, 2020 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+- Figured out how to add ClamSMTP to the mail system's MTA. Details
+  are posted on https://uronode.n1uro.com/linux/axclamsmtp.shtml
+  This will scan for viri both IN and OUT bound mails! Very handy!
+- Added a define routine in config.h now. You must #define or #undef
+  CLAMSMTP based on whether or not you're running clamsmtp and have
+  /etc/clamsmtpd.conf in existance. If it's elsewhere on your system
+  create a symlink to it and you'll be fine.
+- added the fact when #defined where mails are tagged with the fact that
+  your mail is being scanned by CLAMSMTP. This was done in mailcmd.c
+- upped the version to 2.11 in defines.h
+- added notes in INSTALL in regards to the new #define in config.h
+axmail 2.10
+  Updated April, 2019 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+- added online help for the "Delivery Receipt" command. This keeps
+  it in line with all the other online helps.
+- modified defines.h with this version number and also increased the
+  year that I'm still working on modifications to the project.
+axmail 2.9
+  Updated March, 2018 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+- Removed asking for password upon new user login, instead added a new
+  field to axmail.conf for "SysopMail". Now the sysop has to put in their
+  email address as to inform the end user to request their desired password
+  into the system, especially if the sysop is running pop/imap features on
+  their system. This will prevent users from entering in plain text passwords
+  via unencrypted RF paths unlike other systems such as WL2K. I feel this is
+  a major security fix for axMail-FAX.
+- added some line feeds in quit.c per suggestion of Tomasz SP2L so if
+  another program changed the user's mail spool file the warning displays
+  clearer.
+- changed version number to 2.9 in defines.h and changed the end year of
+  maintenance from 2017 to 2018.
+
+axmail 2.8
+  Updated November, 2017 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- added SPers as a command per the suggestion of VE1JOT. This was done in
+  command.c and was actually quite simple to impliment. The logic behind
+  it is to match the mail send command sets with those of standard PBBS
+  messaging commands.
+* Note: The station who mainly requested this feature via VE1JOT, KB9PVH
+  urged that flags, cc, and bcc options be supressed to make it more user
+  friendly on HF at 300 baud. While I'm really NOT a fanatic about this, I
+  do have compassion for those on HF. Steve gave me a different idea than
+  what I was going to do but I did impliment it into mailcmd.c, mailcmd.h
+  and command.c. If one needs a read receipt or to send cc/bcc copies of
+  their message then S still is an option.
+- added a "spers" .hlp file to the archive.
+- changed defines.h to reflect version 2.8.
+- updated welcome.txt to be more generic rather than be version specific.
+- modified mailcmd.c to now prompt for a "carbon copy" address when sending
+  mail. This allows for a duplicate of the message to be sent to the second
+  person one wishes to copy on the mail.
+- edited this file.
+- while I was at it, I decided to add a "blind carbon copy" feature.
+  This will send a copy of a message to the user specified HOWEVER,
+  they will NOT be listed in the recipient listings. For those using
+  raw terminals, it's possible to NOT enter a 'cc' but still enter a 
+  'bcc' address.
+- edited help files: send.hlp and spersonal.hlp to help guide users
+  on how to best send mail.
+- created a bypass method so that if users did not wish to use cc or bcc
+  mail, they can bypass them instead of being prompted for them - suggested 
+  by VE1JOT.
+- added online help for send/sp|cc|bcc mail.
+- added a new signature file function to the system in both command.c and in
+  mailcmd.c. If no signature file exists, it will instruct the user on this
+  fact and also inform them how to make one using the new SIgnature command.
+  Note: If no ~/.signature file exists mail will still be sent, just without
+  a 1 line siguature (max: 79 characters).
+- bullet proofed both the autoforward and signature file routines in command.c
+  by insuring that a null string not only halts execution of both but also
+  removes both ~/.forward and ~/.signature files respectively.
+- cleaned up the send signature a bit and added my little spam ad even if
+  there is no signature file present. This was done in mailcmd.c.
+- added a string in the signature prompt which informs users how to clear
+  their signature if they desire such. This was done in utils.c
+- Added special critical instructions to INSTALL. I didn't know if I had
+  these in there or not but SP2L informs me I did not. Thanks to Tomasz.
+- Fixed a bug that when the mailbox file(s) weren't found for the system
+  MTA (aka: postfix) axMail would segfault. Now not only does it not
+  segfault but also instructs the user to inform the sysop of this error.
+  This bug existed since version 0.0.1. I've been wanting to do something
+  about this for IONs but didn't get to it until now. This was done in quit.c
+- Fixed a couple of typos in README. I have a very difficult keyboard! 
+- Per the suggestion of G4APL (who gives us many great ideas - and why do
+  I refer to myself in plural? I need a DIET!) I did two things:
+  1 - when listing mail there's no message date stamp within the listing.
+      added in mailcmd.c
+  2 - reordered the mail listing fields where I felt they'd make the most
+      sense. Message subject, then message date, then message size are
+      the last 3 fields listed. They should also be kept in a column
+      justified manner of sorts.
+  3 - added a (St)atus header so the user has a better definition of
+      the status of a specific message.
+
+axmail 2.7
+  Updated 18 May, 2017 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- Thanks to Van W1WCG, a bug was spotted in the SR command where if
+  the user entered a parameter such as a message number for example,
+  it wouldn't properly function. This has been fixed. Thanks Van!
+- Forgot to take the "beta" tag out for 2.6. Oops. Fixed.
+- I know in the past I had a 'cc' command for sending mail, and it's
+  been suck in my craw to readd it since.
+
+axmail 2.6
+  Updated 22 September, 2016 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- changed version number in defines.h
+- fixed error message when a pop client has deleted mail from the
+  main mail spool file.
+- removed excessive receipt warning spotted by a gent who identifies 
+  himself as rigor. This was in mailcmd.c in do_readmsg()
+- while looking at the end of that routine, it just gave me an itch that
+  said "if you can look for a warning about a requested receipt, then
+  numbnutz you can offer the reader a chance to just generate a receipt
+  without having to do "SR" as previously stated at the end of the mail.
+  So, with that said and to get feeling back in my genitals, I wrote a
+  routine that asks the reader if they wish to send a receipt, and it
+  also echos where it's destined and confirmation it was sent.
+- added an "--- end of message #* ---" tag at the end of mail when it
+  as finished displaying. This was done in mailcmd.c
+- fixed an existing bug in the message routines where for each message
+  it wasn't resetting the receipt pointer! This bug existed since I
+  introduced the receipt "finder" in the messages. I'm shocked that
+  it wasn't reported to me by someone earlier. Now *only* if a message
+  has requested a receipt will it show that a receipt has been asked
+  for... whew!
+- So many missing online help files! Again I'm surprised no one brought
+  this to my attention. How did we get along with them? "Oh my!" - Sulu
+- Updated this README file.
+
+axmail v2.5.1
+  Updated 28 September, 2015 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- added axmail.8 man page as per spec of Debian downstream.
+- modified Makefile to include axmail.8 manpage installation for both
+  new and upgrade options.
+- modified defines.h and this document to reflect maintenance release.
+ 
+axmail v2.5
+  Updated 30 May, 2015 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- added new delivery receipt function to the send routine. This
+  compliments the read receipt function in the event of high
+  priority mail. Typically the read receipt is an option generated
+  by the recipient who may not decide to generate one. At least this
+  modification ensures with an ESMTP delivery that the sender using
+  axMail will get a reciept from "MAILER-DAEMON" which will verify
+  the status of delivered mail. This change was done in mailcmd.c
+  and is designed with the sendmail binary included with postfix.
+- updated this README file.
+- updated version number in defines.h
+
+axmail v2.4
+  Updated 25 April, 2015 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- cleaned up mbox.c where I had originally placed the receipt checker
+  routine in. This caused loops within the buffer that displayed the
+  message. The true routine lives in mailcmd.c
+- added patch to Makefile provided by Jaroslav at Red Hat for distribution
+  downstream compiles to make packages.
+- changed version in defines.h 
+- major change in command.c, added a new Autofwd command to allow users to
+  auto-forward mail from a remote system to their "home" axMail-FAX base
+  system. Could also be used to forward mail to their internet accounts.
+- added autofwd.hlp file.
+- alphabetized the commandset listing, removed redundantly spelled commands.
+- reworked Makefile and added an "upgrade" option so new files ONLY are
+  deployed after make. Execute using: "make upgrade"
+- updated this file.
+
+axmail v2.3.1 
+  Updated 5 February, 2015 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- added a flag in mailcmd.c where if the request for a receipt exists in a mail
+  message, a bell and a warning sign is generated after the message has been
+  read by the user with instructions to use SR to generate a receipt. This
+  was a difficult routine for me to think of considering the various race
+  conditions that can be expected and met.
+- updated welcome.txt with version upgrade and new feature list.
+- updated README.
+
+axmail v2.3 
+  Updated 5 February, 2015 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- Added a new "Receipt" request flag in mailcmd.c by request of Mitch AB4MW.
+  This defaults to NO but when flagged to YES, a request will be sent to the
+  remote client's agent. If the agent supports such, they will be prompted
+  whether or not to honor your receipt request. This is history as NO AGENT
+  FOR PACKET TERMINALS SUPPORTS THIS! The function of a generated read 
+  receipt is similar to how HylaFax generates confirmation of transmission
+  receipt mails to your mailbox. Currently mail read in axMail will NOT
+  generate a receipt back. I may work on this later, but for now it doesn't
+  exist.
+* My thoughts of the receipt function is negative. The fact that I may be
+  sending notification that I'm in my email client to a remote destination
+  IMHO is such that a webcam may as well be turned on and watch me do email,
+  and send the stream to "Big Brother" and I don't mean the television show.
+  </rant>
+- Updated defines.h with the new version number.
+- Updated welcome.txt so the new version number is displayed.
+
+axmail v2.2 
+  Updated 25 December, 2014 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- Made some maintenance changes, but forgot to log them in here.
+axmail v2.1.1
+ Updated 30 October, 2014 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- Makefile
+  Code provided by Bob Tenty VE3TOK to make it more compatable
+  with newer GCC compiler requirements.
+- utils.c
+  Code provided by Bob Tenty VE3TOK to fix a warning produced when
+  compiling.
+- defines.h
+  Changed version number to reflect the changes incorporated by 
+  Bob Tenty VE3TOK and committed to the subversion repository.
+
+axmail v2.1
+ Updated 31 July, 2014 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- axmail.c
+  Code provided by Jaroslov OK2JRQ fixes a potential security hole in
+  the system privilege matching.
+- global
+  axMail is now under review for considerations as standard packaging in
+  RedHat's fedora project. It appears it's going to be added as a package.
+
+axmail v2.0
+  Updated 8 July, 2013 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- defines.h
+  Updated version number to reflect version release 2.0. Version 1.0.5
+  was simply a maintenance test package to try and reincorporate what
+  I had done up to version 1.0.6 which I believe was one of my last
+  releases up to 2009. Since I've done all that I can recall at this
+  point and time, I decided to match URONode's release numerics with
+  a 2.0 release version.
+
+axmail v1.0.5
+  Updated 5 July, 2013 by Brian Rogers (N1URO) <n1uro@n1uro.net>
+Changes:
+- defines.h
+  Updated email listings to reflect the most current ones I could find
+  including my own. Also added 2013 to the years worked on axMail by
+  me.
+- quit.c
+  Forced ALL mail, read or otherwise when user quits to save to the
+  user's system mailbox. This is for reverse compatability with those
+  who may also run a web-based email service on the internet such as
+  NeoMail, EMUMail, etc. Prior, the system was supposed to separate
+  any read mail (and all accompanying mail in that session) to the
+  axmail ~/mbox file. We don't want this for the specific reason of
+  "reverse email client" compatability.
+
+axmail v1.0.4
+  Updated 23 May, 2008 by Brian Rogers (N1URO) <brian@support.uroweb.net>
+ Changes:
+- setpwnam.c
+  Changed the way SIGPIPE was handled. Instead of being ignored, it will
+  now read a SIGQUIT properly if a QUIT is signaled to axmail either via
+  a shell prompt, or a node frontend. I've been noticing especially on
+  some timeouts that temp files don't flush as they should and the
+  user's directory can start to fill up.
+
+axMail v1.0.3
+  Updated 2 December, 2007 by Brian Rogers (N1URO) <brian@support.uroweb.net>
+Changes:
+- mailcmd.c
+  Reset the way I wanted to handle the user input routine for sending faxes.
+  Commented out some more unneeded/unused code in the do_fax routine... will
+  clean it up in next release or so.
+- mailcmd.c
+  cleaned up a bug I introduced in the never released 1.0.2 where the
+  X-Mailer was duping itself after each line of the body of a message.
+- sfax.hlp
+  Reworded the SFax help file to help show some examples of how to format
+  the header. 
+
+axMail v1.0.2
+  Updated 24 November, 2007 by Brian Rogers (N1URO) <brian@support.uroweb.net>
+Changes:
+- mailcmd.c
+  Cleaned up some of the code in SFax. Also made some cosmetic changes.
+
+axMail v1.0.1
+  Updated 31 October, 2007 by Brian Rogers (N1URO) <brian@support.uroweb.net>
+Changes:
+- mailcmd.c
+  Added a new routine to allow users to send faxes. This is defined by the
+  command "SF" for Send Fax. The routine was taken from the "S"end function
+  however since it's a one-way transmission, there is no reply available
+  nor is there an option for users to fax to any fax service as some I know
+  are pay services.
+- config.h
+  added definitions for faxgate in axmail.conf
+- config.c
+  added routine to allow for faxgate as a variable and be called from 
+  mailcmd.c
+- defines.h
+  version upgraded from v1.0.0 (unreleased - test version) to
+  v1.0.1
+- etc/axmail.conf
+  Added new line called "FaxGate" with an example of how to properly
+  configure this line.
+- etc/help/sfax.hlp
+  Added new file "sfax.hlp" which is an online help file for the SFax
+  command.
+
+axMail v0.0.9
+  Updated 26 September, 2006 by Brian Rogers (N1URO) <n1uro@n1uro.com>
+Changes:
+- mailcmd.c
+  Added a new routine that prompts the sender whether or not the message
+  is of an emergency/high priority mail message. If it's emergency message
+  then the headers are appended with an X-code flagged in such a manner
+  that Eudora and Outlook will display the received mail with a red flag
+  of sorts. The idea of such came to me in thinking of "what can I do
+  to help improve means of emergency communications using TCP/IP, Linux,
+  and packet radio?" Having the ability to "red flag" an SMTP message
+  I don't believe has yet to be available in any packet messaging
+  system... axMail I hope is the first.
+
+  If a user just hits enter, or selects "no" then the mail message
+  is sent under normal send routines.
+
+  found a minor bug in my routine where if an end user answered
+  "yes" in wanting to send an emergency/high priority message the system
+  ignored the request and sent it as 'normal' delivery. Made a minor
+  change to bullet-proof the responce.
+
+  Added online help text if user is unsure about sending a message
+  flagged urgent or normal. This text is available when the user is
+  prompted for priority selection by hitting "?" at the prompt.
+- defines.h
+  Version updated from v0.0.8 to v0.0.9
+
+axMail v0.0.8
+  Updated 2006 by Brian Rogers (N1URO) <n1uro@n1uro.com>
+ 
+Changes:
+ - mailcmd.c
+   Rewrote and incorporated code provided by IW3IJQ how axMail inserts
+   it's version number in the X-Mailer: string.
+ - mailcmd.c   
+   Added an X-Origin: string to show those peeking at mail headers
+   just how the message was possibly sent... by AMATEUR RADIO!
+ - axmail.conf
+   Added config option in "AllowMail" for axhome, a rewrite of code
+   submitted by Stefano IW3IJQ. While I stripped out home directory
+   structures similar to that of qmail or axspawn, Stefano convinced
+   me that it may be easier to manage home directories for axMail users
+   who don't have shell access to branch out within a preset directory.
+ - defines.h
+   Updated version number from 0.0.7 to 0.0.8
+ - axmail.c and config.c
+   Rewrote and incorporated code to allow for the routines to use
+   what Stefano IW3IJQ originally labled "newuhome" to use "axhome".
+   While I was at it, I rewrote and shortened the error text pushed
+   to a user who doesn't have permission to use such a directory.
+ * Note: When I write error texts and menus, I try to write them for
+   users on a multi-hop 1200 baud path thus the shorter the better as
+   long as context isn't lost and for long distance hops where full
+   paclen may cause retries (worse yet timeouts!)
+
+axMail v0.0.7
+  
+  Updated 2005 by Brian Rogers (N1URO) <n1uro@n1uro.com>
+
+Changes:
+ - cosmetics
+   My usual "I like seeing this this way" type cosmetics... too many
+   to mention!
+ - adduser.c
+   changed the hard coding of user 'home' directories so that instead
+   of them going into a period delimited sort, just dump em all into
+   /home/<user> which seems to be "the norm" on most systems I've had
+   to assist with.
+ - adduser.c
+   fixed a bug where creating a user was actually causing the program to
+   segfault upon exit the first time a user went into the mailbox! The
+   node frontends hid this segfault as the program still flushed itself
+   from ram but I spotted it when running it at a command prompt. The
+   segfault came when axMail attempted to write mail back to the user's
+   system mailbox and it didn't exist. How I fixed this is listed next.
+   This may just be a new bug that appeared with the upgrading of libs,
+   this I'm unsure of and since I have no desire to go backwards I have
+   decided to actually make a minor routine...
+ - welcome.txt
+   New users are now sent a "welcome" message that the sysop can easily
+   customize to their desires. It's located at /etc/ax25/welcome.txt.
+   I figured that since axMail was segfaulting because such a file did
+   not exist, I might as well make use of this need by having the program
+   send the user a greeting.   
+ - defines.h
+   Changed paths to be more in line with the more modern type configs
+   as a default. Paths can still be defined by the sysop prior to 
+   compiling axMail. 
+ - Makefile
+   I changed the default of make install to include all of the subroutines
+   within the Makefile yet leaving such things as "make installbin" 
+   available as runtime options if just a binary refresh creation is 
+   desired. 
+ - other
+   I'm sure I missed a note or two *shrug*
+
+axMail v0.0.6
+
+  Tweeks made by Marius Petrescu (?) I know there was a ver 0.0.6 which
+  I at one time had but lost and can't seem to find it. My (n1uro) 
+  changes may have alread been incorporated.
+
+axMail v0.0.5
+
+  True mailbox functionalities created by Marius Petrescu.
+  Added Mailbox save routines (compatible with the command line
+  mail agent, including ~/mbox file)
+
+axMail v0.0.4
+
+  Copyright (c) 1996 Heikki Hannikainen (OH7LZB) <hessu@pspt.fi>
+  
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+
+  Don't give this one to anyone yet... it is NOT ready for distribution!
+
+  This is a simple mail user agent intended to provide the
+mail functions in xNOS in a Linux ax.25 environment. If required,
+it creates a normal user account for each new user (code mostly taken
+from axspawn by Joerg Reuter (DL1BKE)), so that they can receive mail
+on the system. axMail uses sendmail (or similar) to deliver mail, and
+reads mail from each user's system mailbox (/var/spool/mail/username).
+It does not provide any means of transferring mail between hosts.
+
+  axMail provides a simple, low-overhead user interface, much similar
+to /bin/mail, xNOS and the packet BBS systems. It's useful for providing 
+good SMTP mail services for "dumb" ax.25 users over slow radio channels.
+
+  axMail is intended to be called from node. It takes one command
+line argument of the user's callsign (with or without SSID). It must
+be run as root, but it setuid()'s itself to the respective user's
+privileges as soon as possible. It might run from ax25d as well.
+It can also be executed from a shell with user privileges.
+
+  Some code (command parser, configuration file stuff) and the internal 
+architecture was taken from the LinuxNode frontend by Tomi Manninen 
+(OH2BNS). Thanks!
+
+INSTALLATION:
+
+	See the file: INSTALL
+
+TODO:
+	Suggestions?
+
+-- 
+Brian Rogers <n1uro@n1uro.net> [n1uro@n1uro.#cct.ct.usa.noam]
+ftp://ftp.n1uro.net/pub/hamradio/packet

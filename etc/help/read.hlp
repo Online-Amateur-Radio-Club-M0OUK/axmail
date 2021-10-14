@@ -1,0 +1,7 @@
+USAGE
+        read <msg #>
+
+DESCRIPTION
+	Use this command to read your mail. This command requires a
+	parameter of a message number to read. Ex: to read your mail
+	message 3 you would enter: R 3.

@@ -1,0 +1,17 @@
+Subject: Welcome to axMail-FAX
+
+Welcome to axmail! Your email address is listed above the prompt.
+For further assistance, try "?" or email root.
+
+axMail is the first mail client for packet that allows it's users the ability
+to:
+send/receive emails, send outbound faxing with confirmations and receipts
+read receipts for their mail , server to server confirmation of delivery of mail
+cc and bcc fields for multiple copies of mail, priority flagging for emergency
+communications, and an SP shortcut for those using HF to bypass many prompting
+...all by using just a dumb terminal.
+
+Some sites may offer pop3/IMAP/webmail as well. Contact your sysop to see if
+this is possible.
+
+73!
